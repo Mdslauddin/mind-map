@@ -1,1 +1,125 @@
 
+* {
+        box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+                font-family: Arial, sans-serif;
+                    background: #f5f5f5;
+                    }
+
+                    header {
+                        height: 60px;
+                            background: white;
+                                border-bottom: 1px solid #ddd;
+
+                                    display: flex;
+                                        align-items: center;
+
+                                            padding-left: 20px;
+                                            }
+
+                                            header h1 {
+                                                font-size: 22px;
+                                                }
+
+                                                #mindmap {
+                                                    position: relative;
+                                                        width: 100%;
+                                                            height: calc(100vh - 60px);
+
+                                                                overflow: hidden;
+                                                                }
+
+                                                                .node {
+                                                                    position: absolute;
+
+                                                                        padding: 15px 25px;
+
+                                                                            background: white;
+                                                                                border: 2px solid #333;
+                                                                                    border-radius: 10px;
+
+                                                                                        cursor: pointer;
+
+                                                                                            user-select: none;
+                                                                                            }
+
+                                                                                            .center-node {
+                                                                                                left: 50%;
+                                                                                                    top: 50%;
+
+                                                                                                        transform: translate(-50%, -50%);
+
+                                                                                                            background: #e8f0ff;
+                                                                                                            }
+
+                                                                                                            .node-1 {
+                                                                                                                left: 20%;
+                                                                                                                    top: 30%;
+                                                                                                                    }
+
+                                                                                                                    .node-2 {
+                                                                                                                        left: 70%;
+                                                                                                                            top: 30%;
+                                                                                                                            }
+
+                                                                                                                            .node-3 {
+                                                                                                                                left: 20%;
+                                                                                                                                    top: 70%;
+                                                                                                                                    }* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+}
+
+header {
+    height: 60px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+
+    display: flex;
+    align-items: center;
+
+    padding-left: 20px;
+}
+
+header h1 {
+    font-size: 22px;
+}
+
+#mindmap {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 60px);
+
+    overflow: hidden;
+}
+
+.node {
+    position: absolute;
+
+    padding: 15px 25px;
+
+    background: white;
+    border: 2px solid #333;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    user-select: none;
+}
+
+.center-node {
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    background: #e8f0ff;
+}
