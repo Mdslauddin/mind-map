@@ -1,0 +1,2946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindMap Version 9</title>
+
+<style>
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f3f4f6;
+    color: #222;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+/* =========================================================
+   APPLICATION
+========================================================= */
+
+#app {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================================
+   MENU BAR
+========================================================= */
+
+#menu-bar {
+    height: 38px;
+    min-height: 38px;
+    background: #222;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    user-select: none;
+}
+
+.menu {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.menu-button {
+    border: none;
+    background: transparent;
+    color: white;
+    padding: 0 14px;
+    height: 100%;
+    cursor: pointer;
+}
+
+.menu-button:hover {
+    background: #444;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 38px;
+    left: 0;
+    width: 180px;
+    background: white;
+    color: #222;
+    border: 1px solid #ccc;
+    box-shadow: 0 5px 15px rgba(0,0,0,.2);
+    z-index: 1000;
+}
+
+.menu:hover .dropdown {
+    display: block;
+}
+
+.dropdown button {
+    display: block;
+    width: 100%;
+    border: none;
+    background: white;
+    text-align: left;
+    padding: 10px 14px;
+    cursor: pointer;
+}
+
+.dropdown button:hover {
+    background: #eee;
+}
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+#toolbar {
+    height: 48px;
+    min-height: 48px;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px;
+}
+
+.tool-btn {
+    height: 34px;
+    min-width: 34px;
+    border: 1px solid #ccc;
+    background: #fafafa;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.tool-btn:hover {
+    background: #e9ecef;
+}
+
+.tool-btn.active {
+    background: #dbeafe;
+    border-color: #60a5fa;
+}
+
+.separator {
+    width: 1px;
+    height: 28px;
+    background: #ccc;
+    margin: 0 4px;
+}
+
+#map-title {
+    margin-left: auto;
+    margin-right: 15px;
+    font-weight: bold;
+}
+
+/* =========================================================
+   MAIN AREA
+========================================================= */
+
+#main {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+/* =========================================================
+   LEFT TOOL PANEL
+========================================================= */
+
+#left-panel {
+    width: 58px;
+    min-width: 58px;
+    background: #292929;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 8px;
+    gap: 7px;
+    z-index: 50;
+}
+
+.left-btn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 6px;
+    background: #383838;
+    color: white;
+    cursor: pointer;
+    font-size: 17px;
+}
+
+.left-btn:hover {
+    background: #505050;
+}
+
+.left-btn.active {
+    background: #2563eb;
+}
+
+/* =========================================================
+   CANVAS
+========================================================= */
+
+#canvas {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+
+    background-color: #ffffff;
+
+    background-image:
+        linear-gradient(#e5e7eb 1px, transparent 1px),
+        linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+
+    background-size: 25px 25px;
+
+    cursor: grab;
+}
+
+#canvas.dragging {
+    cursor: grabbing;
+}
+
+/* =========================================================
+   MAP WORLD
+========================================================= */
+
+#world {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0;
+}
+
+#edges {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+}
+
+#nodes {
+    position: absolute;
+    inset: 0;
+}
+
+/* =========================================================
+   NODES
+========================================================= */
+
+.node {
+    position: absolute;
+    min-width: 120px;
+    max-width: 260px;
+    min-height: 42px;
+
+    padding: 10px 15px;
+
+    background: white;
+    border: 2px solid #555;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+    cursor: move;
+    user-select: none;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+
+    transform: translate(-50%, -50%);
+}
+
+.node:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+
+.node.selected {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.2);
+}
+
+.node.root {
+    font-weight: bold;
+    border-width: 3px;
+}
+
+.node-text {
+    word-break: break-word;
+}
+
+/* =========================================================
+   COLLAPSE BUTTON
+========================================================= */
+
+.collapse-btn {
+    position: absolute;
+    right: -11px;
+    bottom: -11px;
+
+    width: 22px;
+    height: 22px;
+
+    border-radius: 50%;
+    border: 1px solid #777;
+
+    background: white;
+    color: #333;
+
+    cursor: pointer;
+    font-size: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   RIGHT NODE EDITOR
+========================================================= */
+
+#editor {
+    width: 280px;
+    min-width: 280px;
+    background: white;
+    border-left: 1px solid #ccc;
+    padding: 15px;
+
+    overflow-y: auto;
+}
+
+#editor h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.editor-group {
+    margin-bottom: 15px;
+}
+
+.editor-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.editor-group input,
+.editor-group select {
+    width: 100%;
+    height: 36px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 0 8px;
+}
+
+.editor-row {
+    display: flex;
+    gap: 6px;
+}
+
+.editor-row button {
+    flex: 1;
+    height: 34px;
+    border: 1px solid #ccc;
+    background: #f7f7f7;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.editor-row button:hover {
+    background: #e5e7eb;
+}
+
+.danger {
+    color: #dc2626;
+}
+
+/* =========================================================
+   BOTTOM STATUS BAR
+========================================================= */
+
+#statusbar {
+    position: absolute;
+    left: 70px;
+    bottom: 12px;
+
+    background: rgba(255,255,255,.94);
+    border: 1px solid #ccc;
+    border-radius: 7px;
+
+    padding: 6px 10px;
+    font-size: 12px;
+
+    z-index: 20;
+}
+
+#zoom-controls {
+    position: absolute;
+    right: 295px;
+    bottom: 12px;
+
+    display: flex;
+    gap: 4px;
+
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    padding: 4px;
+
+    z-index: 20;
+}
+
+#zoom-controls button {
+    width: 32px;
+    height: 30px;
+    border: none;
+    background: #f3f4f6;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#zoom-controls button:hover {
+    background: #ddd;
+}
+
+#zoom-value {
+    min-width: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   GRID PANEL
+========================================================= */
+
+#grid-panel {
+    display: none;
+
+    position: absolute;
+    left: 70px;
+    top: 100px;
+
+    width: 260px;
+
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+
+    padding: 15px;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,.2);
+
+    z-index: 100;
+}
+
+#grid-panel.open {
+    display: block;
+}
+
+#grid-panel h3 {
+    margin-bottom: 15px;
+}
+
+.grid-row {
+    margin-bottom: 12px;
+}
+
+.grid-row label {
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.grid-row input,
+.grid-row select {
+    width: 100%;
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+#json-modal {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0,0,0,.5);
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 200;
+}
+
+#json-modal.open {
+    display: flex;
+}
+
+.modal-box {
+    width: 600px;
+    max-width: 90vw;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.modal-box h2 {
+    margin-bottom: 12px;
+}
+
+#json-text {
+    width: 100%;
+    height: 300px;
+    resize: vertical;
+    padding: 10px;
+    font-family: monospace;
+    border: 1px solid #ccc;
+}
+
+.modal-buttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.modal-buttons button {
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 800px) {
+
+    #editor {
+        width: 230px;
+        min-width: 230px;
+    }
+
+    #zoom-controls {
+        right: 240px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    #editor {
+        display: none;
+    }
+
+    #zoom-controls {
+        right: 10px;
+    }
+
+    #statusbar {
+        left: 65px;
+    }
+
+    #map-title {
+        display: none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+    <!-- =====================================================
+         MENU BAR
+    ====================================================== -->
+
+    <div id="menu-bar">
+
+        <div class="menu">
+            <button class="menu-button">File</button>
+
+            <div class="dropdown">
+                <button onclick="newMap()">New</button>
+                <button onclick="saveMap()">Save</button>
+                <button onclick="exportJSON()">Export JSON</button>
+                <button onclick="importJSON()">Import JSON</button>
+            </div>
+        </div>
+
+        <div class="menu">
+            <button class="menu-button">Edit</button>
+
+            <div class="dropdown">
+                <button onclick="undo()">Undo</button>
+                <button onclick="redo()">Redo</button>
+                <button onclick="duplicateSelected()">Duplicate</button>
+                <button onclick="deleteSelected()">Delete</button>
+            </div>
+        </div>
+
+        <div class="menu">
+            <button class="menu-button">View</button>
+
+            <div class="dropdown">
+                <button onclick="zoomIn()">Zoom In</button>
+                <button onclick="zoomOut()">Zoom Out</button>
+                <button onclick="fitMap()">Fit Map</button>
+                <button onclick="toggleGrid()">Grid</button>
+            </div>
+        </div>
+
+        <div class="menu">
+            <button class="menu-button">Insert</button>
+
+            <div class="dropdown">
+                <button onclick="addChild()">Child Node</button>
+                <button onclick="addSibling()">Sibling Node</button>
+                <button onclick="addParent()">Parent Node</button>
+            </div>
+        </div>
+
+        <div class="menu">
+            <button class="menu-button">Help</button>
+
+            <div class="dropdown">
+                <button onclick="showShortcuts()">Keyboard Shortcuts</button>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN TOOLBAR
+    ====================================================== -->
+
+    <div id="toolbar">
+
+        <button class="tool-btn" onclick="newMap()" title="New">
+            📄
+        </button>
+
+        <button class="tool-btn" onclick="undo()" title="Undo">
+            ↶
+        </button>
+
+        <button class="tool-btn" onclick="redo()" title="Redo">
+            ↷
+        </button>
+
+        <div class="separator"></div>
+
+        <button class="tool-btn" onclick="addChild()" title="Add Child">
+            +C
+        </button>
+
+        <button class="tool-btn" onclick="addSibling()" title="Add Sibling">
+            +S
+        </button>
+
+        <button class="tool-btn" onclick="addParent()" title="Add Parent">
+            +P
+        </button>
+
+        <button class="tool-btn" onclick="duplicateSelected()" title="Duplicate">
+            ⧉
+        </button>
+
+        <button class="tool-btn" onclick="deleteSelected()" title="Delete">
+            🗑
+        </button>
+
+        <div class="separator"></div>
+
+        <button class="tool-btn" onclick="zoomOut()">
+            −
+        </button>
+
+        <button class="tool-btn" onclick="zoomIn()">
+            +
+        </button>
+
+        <button class="tool-btn" onclick="fitMap()">
+            Fit
+        </button>
+
+        <div class="separator"></div>
+
+        <button class="tool-btn" onclick="saveMap()">
+            Save
+        </button>
+
+        <span id="map-title">
+            MindMap Version 9
+        </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <div id="main">
+
+        <!-- LEFT TOOLBAR -->
+
+        <aside id="left-panel">
+
+            <button class="left-btn"
+                    onclick="addChild()"
+                    title="Add Child">
+                +
+            </button>
+
+            <button class="left-btn"
+                    onclick="addSibling()"
+                    title="Add Sibling">
+                ⇄
+            </button>
+
+            <button class="left-btn"
+                    onclick="addParent()"
+                    title="Add Parent">
+                ↑
+            </button>
+
+            <button class="left-btn"
+                    onclick="duplicateSelected()"
+                    title="Duplicate">
+                ⧉
+            </button>
+
+            <button class="left-btn"
+                    onclick="deleteSelected()"
+                    title="Delete">
+                🗑
+            </button>
+
+            <button class="left-btn"
+                    onclick="toggleGrid()"
+                    title="Grid">
+                #
+            </button>
+
+        </aside>
+
+
+        <!-- CANVAS -->
+
+        <section id="canvas">
+
+            <div id="world">
+
+                <svg id="edges">
+                    <g id="edge-layer"></g>
+                </svg>
+
+                <div id="nodes"></div>
+
+            </div>
+
+
+            <!-- GRID PANEL -->
+
+            <div id="grid-panel">
+
+                <h3>Grid Settings</h3>
+
+                <div class="grid-row">
+
+                    <label>Grid Type</label>
+
+                    <select id="grid-type"
+                            onchange="updateGrid()">
+
+                        <option value="line">
+                            Line
+                        </option>
+
+                        <option value="dot">
+                            Dot
+                        </option>
+
+                        <option value="none">
+                            None
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="grid-row">
+
+                    <label>Grid Size</label>
+
+                    <input
+                        id="grid-size"
+                        type="range"
+                        min="10"
+                        max="100"
+                        value="25"
+                        oninput="updateGrid()">
+
+                </div>
+
+
+                <div class="grid-row">
+
+                    <label>Grid Opacity</label>
+
+                    <input
+                        id="grid-opacity"
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value="1"
+                        oninput="updateGrid()">
+
+                </div>
+
+
+                <div class="grid-row">
+
+                    <label>Background</label>
+
+                    <input
+                        id="grid-background"
+                        type="color"
+                        value="#ffffff"
+                        onchange="updateGrid()">
+
+                </div>
+
+
+                <div class="grid-row">
+
+                    <label>Grid Color</label>
+
+                    <input
+                        id="grid-color"
+                        type="color"
+                        value="#dddddd"
+                        onchange="updateGrid()">
+
+                </div>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div id="statusbar">
+                Selected: <span id="selected-name">None</span>
+            </div>
+
+
+            <!-- ZOOM -->
+
+            <div id="zoom-controls">
+
+                <button onclick="zoomOut()">−</button>
+
+                <div id="zoom-value">
+                    100%
+                </div>
+
+                <button onclick="zoomIn()">+</button>
+
+                <button onclick="fitMap()">
+                    Fit
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             NODE EDITOR
+        ================================================== -->
+
+        <aside id="editor">
+
+            <h2>Node Editor</h2>
+
+            <div class="editor-group">
+
+                <label>Node Text</label>
+
+                <input
+                    id="node-text-input"
+                    type="text"
+                    placeholder="Select a node">
+
+            </div>
+
+
+            <div class="editor-group">
+
+                <label>Shape</label>
+
+                <select id="node-shape">
+
+                    <option value="rounded">
+                        Rounded
+                    </option>
+
+                    <option value="square">
+                        Square
+                    </option>
+
+                    <option value="pill">
+                        Pill
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="editor-group">
+
+                <label>Color</label>
+
+                <input
+                    id="node-color"
+                    type="color"
+                    value="#ffffff">
+
+            </div>
+
+
+            <div class="editor-group">
+
+                <label>Font Size</label>
+
+                <input
+                    id="node-font-size"
+                    type="range"
+                    min="10"
+                    max="32"
+                    value="16">
+
+            </div>
+
+
+            <div class="editor-group">
+
+                <label>Formatting</label>
+
+                <div class="editor-row">
+
+                    <button onclick="toggleBold()">
+                        <b>B</b>
+                    </button>
+
+                    <button onclick="toggleItalic()">
+                        <i>I</i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="editor-group">
+
+                <label>Node Actions</label>
+
+                <div class="editor-row">
+
+                    <button onclick="addChild()">
+                        Child
+                    </button>
+
+                    <button onclick="addSibling()">
+                        Sibling
+                    </button>
+
+                </div>
+
+                <br>
+
+                <div class="editor-row">
+
+                    <button onclick="addParent()">
+                        Parent
+                    </button>
+
+                    <button
+                        class="danger"
+                        onclick="deleteSelected()">
+                        Delete
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="editor-group">
+
+                <label>Branch</label>
+
+                <div class="editor-row">
+
+                    <button onclick="toggleCollapse()">
+                        Collapse / Expand
+                    </button>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     JSON MODAL
+========================================================== -->
+
+<div id="json-modal">
+
+    <div class="modal-box">
+
+        <h2>MindMap JSON</h2>
+
+        <textarea id="json-text"></textarea>
+
+        <div class="modal-buttons">
+
+            <button onclick="closeJSON()">
+                Cancel
+            </button>
+
+            <button onclick="applyJSON()">
+                Apply
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+/* =========================================================
+   MINDMAP VERSION 9
+========================================================= */
+
+
+/* =========================================================
+   DATA
+========================================================= */
+
+let nodes = [
+    {
+        id: "root",
+        text: "My MindMap",
+        parentId: null,
+        x: 500,
+        y: 350,
+        color: "#ffffff",
+        shape: "rounded",
+        fontSize: 18,
+        bold: true,
+        italic: false,
+        collapsed: false
+    },
+
+    {
+        id: "node1",
+        text: "HTML",
+        parentId: "root",
+        x: 250,
+        y: 250,
+        color: "#ffffff",
+        shape: "rounded",
+        fontSize: 16,
+        bold: false,
+        italic: false,
+        collapsed: false
+    },
+
+    {
+        id: "node2",
+        text: "CSS",
+        parentId: "root",
+        x: 250,
+        y: 450,
+        color: "#ffffff",
+        shape: "rounded",
+        fontSize: 16,
+        bold: false,
+        italic: false,
+        collapsed: false
+    },
+
+    {
+        id: "node3",
+        text: "JavaScript",
+        parentId: "root",
+        x: 750,
+        y: 350,
+        color: "#ffffff",
+        shape: "rounded",
+        fontSize: 16,
+        bold: false,
+        italic: false,
+        collapsed: false
+    }
+];
+
+
+/* =========================================================
+   GLOBAL STATE
+========================================================= */
+
+let selectedId = "root";
+
+let zoom = 1;
+
+let panX = 0;
+let panY = 0;
+
+let draggingNode = null;
+
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+let panning = false;
+
+let panStartX = 0;
+let panStartY = 0;
+
+let oldPanX = 0;
+let oldPanY = 0;
+
+let undoStack = [];
+let redoStack = [];
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const canvas = document.getElementById("canvas");
+
+const world = document.getElementById("world");
+
+const nodesContainer =
+    document.getElementById("nodes");
+
+const edgeLayer =
+    document.getElementById("edge-layer");
+
+const editor =
+    document.getElementById("editor");
+
+const textInput =
+    document.getElementById("node-text-input");
+
+const colorInput =
+    document.getElementById("node-color");
+
+const fontSizeInput =
+    document.getElementById("node-font-size");
+
+const shapeInput =
+    document.getElementById("node-shape");
+
+const selectedName =
+    document.getElementById("selected-name");
+
+const zoomValue =
+    document.getElementById("zoom-value");
+
+
+/* =========================================================
+   ID GENERATOR
+========================================================= */
+
+function createId() {
+
+    return "node-" +
+        Date.now() +
+        "-" +
+        Math.random()
+            .toString(36)
+            .substring(2, 8);
+}
+
+
+/* =========================================================
+   GET NODE
+========================================================= */
+
+function getNode(id) {
+
+    return nodes.find(node => node.id === id);
+}
+
+
+/* =========================================================
+   GET CHILDREN
+========================================================= */
+
+function getChildren(id) {
+
+    return nodes.filter(
+        node => node.parentId === id
+    );
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function render() {
+
+    nodesContainer.innerHTML = "";
+
+    edgeLayer.innerHTML = "";
+
+
+    /* ---------------------------------------------
+       DRAW EDGES
+    --------------------------------------------- */
+
+    nodes.forEach(node => {
+
+        if (!node.parentId) {
+            return;
+        }
+
+        const parent = getNode(node.parentId);
+
+        if (!parent) {
+            return;
+        }
+
+        if (isHidden(node.id)) {
+            return;
+        }
+
+        if (isHidden(parent.id)) {
+            return;
+        }
+
+        const line =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path"
+            );
+
+        const dx = node.x - parent.x;
+
+        const curve = Math.abs(dx) * 0.5;
+
+        const d =
+            `M ${parent.x} ${parent.y}
+             C ${parent.x + curve} ${parent.y},
+               ${node.x - curve} ${node.y},
+               ${node.x} ${node.y}`;
+
+        line.setAttribute("d", d);
+
+        line.setAttribute(
+            "fill",
+            "none"
+        );
+
+        line.setAttribute(
+            "stroke",
+            "#777"
+        );
+
+        line.setAttribute(
+            "stroke-width",
+            "2"
+        );
+
+        edgeLayer.appendChild(line);
+
+    });
+
+
+    /* ---------------------------------------------
+       DRAW NODES
+    --------------------------------------------- */
+
+    nodes.forEach(node => {
+
+        if (isHidden(node.id)) {
+            return;
+        }
+
+        const element =
+            document.createElement("div");
+
+        element.className = "node";
+
+        if (node.id === selectedId) {
+            element.classList.add("selected");
+        }
+
+        if (!node.parentId) {
+            element.classList.add("root");
+        }
+
+
+        /* Position */
+
+        element.style.left =
+            node.x + "px";
+
+        element.style.top =
+            node.y + "px";
+
+
+        /* Background */
+
+        element.style.backgroundColor =
+            node.color;
+
+
+        /* Font */
+
+        element.style.fontSize =
+            node.fontSize + "px";
+
+        element.style.fontWeight =
+            node.bold
+                ? "bold"
+                : "normal";
+
+        element.style.fontStyle =
+            node.italic
+                ? "italic"
+                : "normal";
+
+
+        /* Shape */
+
+        if (node.shape === "square") {
+
+            element.style.borderRadius =
+                "2px";
+
+        }
+
+        else if (node.shape === "pill") {
+
+            element.style.borderRadius =
+                "30px";
+
+        }
+
+        else {
+
+            element.style.borderRadius =
+                "8px";
+
+        }
+
+
+        /* Text */
+
+        const text =
+            document.createElement("div");
+
+        text.className =
+            "node-text";
+
+        text.textContent =
+            node.text;
+
+        element.appendChild(text);
+
+
+        /* Collapse button */
+
+        const children =
+            getChildren(node.id);
+
+        if (children.length > 0) {
+
+            const collapse =
+                document.createElement("button");
+
+            collapse.className =
+                "collapse-btn";
+
+            collapse.textContent =
+                node.collapsed
+                    ? "+"
+                    : "−";
+
+            collapse.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+                    saveHistory();
+
+                    node.collapsed =
+                        !node.collapsed;
+
+                    render();
+
+                }
+            );
+
+            element.appendChild(
+                collapse
+            );
+        }
+
+
+        /* Node selection */
+
+        element.addEventListener(
+            "mousedown",
+            event => {
+
+                if (
+                    event.target.classList
+                        .contains("collapse-btn")
+                ) {
+                    return;
+                }
+
+                selectNode(node.id);
+
+                startNodeDrag(
+                    event,
+                    node
+                );
+
+            }
+        );
+
+
+        nodesContainer.appendChild(
+            element
+        );
+
+    });
+
+
+    updateWorld();
+
+}
+
+
+/* =========================================================
+   HIDDEN NODE
+========================================================= */
+
+function isHidden(id) {
+
+    let node = getNode(id);
+
+    if (!node) {
+        return true;
+    }
+
+    while (node.parentId) {
+
+        const parent =
+            getNode(node.parentId);
+
+        if (!parent) {
+            return false;
+        }
+
+        if (parent.collapsed) {
+            return true;
+        }
+
+        node = parent;
+    }
+
+    return false;
+}
+
+
+/* =========================================================
+   SELECT NODE
+========================================================= */
+
+function selectNode(id) {
+
+    selectedId = id;
+
+    const node = getNode(id);
+
+    if (!node) {
+        return;
+    }
+
+    textInput.value =
+        node.text;
+
+    colorInput.value =
+        node.color;
+
+    fontSizeInput.value =
+        node.fontSize;
+
+    shapeInput.value =
+        node.shape;
+
+    selectedName.textContent =
+        node.text;
+
+    render();
+}
+
+
+/* =========================================================
+   EDIT TEXT
+========================================================= */
+
+textInput.addEventListener(
+    "input",
+    () => {
+
+        const node =
+            getNode(selectedId);
+
+        if (!node) {
+            return;
+        }
+
+        if (
+            textInput.value ===
+            node.text
+        ) {
+            return;
+        }
+
+        node.text =
+            textInput.value;
+
+        selectedName.textContent =
+            node.text;
+
+        render();
+
+    }
+);
+
+
+/* =========================================================
+   COLOR
+========================================================= */
+
+colorInput.addEventListener(
+    "input",
+    () => {
+
+        const node =
+            getNode(selectedId);
+
+        if (!node) {
+            return;
+        }
+
+        node.color =
+            colorInput.value;
+
+        render();
+
+    }
+);
+
+
+/* =========================================================
+   FONT SIZE
+========================================================= */
+
+fontSizeInput.addEventListener(
+    "input",
+    () => {
+
+        const node =
+            getNode(selectedId);
+
+        if (!node) {
+            return;
+        }
+
+        node.fontSize =
+            Number(
+                fontSizeInput.value
+            );
+
+        render();
+
+    }
+);
+
+
+/* =========================================================
+   SHAPE
+========================================================= */
+
+shapeInput.addEventListener(
+    "change",
+    () => {
+
+        const node =
+            getNode(selectedId);
+
+        if (!node) {
+            return;
+        }
+
+        node.shape =
+            shapeInput.value;
+
+        render();
+
+    }
+);
+
+
+/* =========================================================
+   BOLD
+========================================================= */
+
+function toggleBold() {
+
+    const node =
+        getNode(selectedId);
+
+    if (!node) {
+        return;
+    }
+
+    saveHistory();
+
+    node.bold =
+        !node.bold;
+
+    render();
+}
+
+
+/* =========================================================
+   ITALIC
+========================================================= */
+
+function toggleItalic() {
+
+    const node =
+        getNode(selectedId);
+
+    if (!node) {
+        return;
+    }
+
+    saveHistory();
+
+    node.italic =
+        !node.italic;
+
+    render();
+}
+
+
+/* =========================================================
+   ADD CHILD
+========================================================= */
+
+function addChild() {
+
+    const parent =
+        getNode(selectedId);
+
+    if (!parent) {
+        return;
+    }
+
+    saveHistory();
+
+    const children =
+        getChildren(parent.id);
+
+    const newNode = {
+
+        id: createId(),
+
+        text: "New Child",
+
+        parentId:
+            parent.id,
+
+        x:
+            parent.x + 220,
+
+        y:
+            parent.y +
+            (children.length * 80) -
+            ((children.length - 1) * 40),
+
+        color: "#ffffff",
+
+        shape: "rounded",
+
+        fontSize: 16,
+
+        bold: false,
+
+        italic: false,
+
+        collapsed: false
+    };
+
+    nodes.push(newNode);
+
+    selectedId =
+        newNode.id;
+
+    render();
+
+    selectNode(newNode.id);
+}
+
+
+/* =========================================================
+   ADD SIBLING
+========================================================= */
+
+function addSibling() {
+
+    const selected =
+        getNode(selectedId);
+
+    if (!selected) {
+        return;
+    }
+
+    if (!selected.parentId) {
+
+        addChild();
+
+        return;
+    }
+
+    saveHistory();
+
+    const sibling = {
+
+        id: createId(),
+
+        text: "New Sibling",
+
+        parentId:
+            selected.parentId,
+
+        x:
+            selected.x,
+
+        y:
+            selected.y + 80,
+
+        color: "#ffffff",
+
+        shape: "rounded",
+
+        fontSize: 16,
+
+        bold: false,
+
+        italic: false,
+
+        collapsed: false
+    };
+
+    nodes.push(sibling);
+
+    selectedId =
+        sibling.id;
+
+    render();
+
+    selectNode(sibling.id);
+}
+
+
+/* =========================================================
+   ADD PARENT
+========================================================= */
+
+function addParent() {
+
+    const selected =
+        getNode(selectedId);
+
+    if (!selected) {
+        return;
+    }
+
+    saveHistory();
+
+    const oldParentId =
+        selected.parentId;
+
+    const parentNode = {
+
+        id: createId(),
+
+        text: "New Parent",
+
+        parentId:
+            oldParentId,
+
+        x:
+            selected.x - 220,
+
+        y:
+            selected.y,
+
+        color: "#ffffff",
+
+        shape: "rounded",
+
+        fontSize: 16,
+
+        bold: false,
+
+        italic: false,
+
+        collapsed: false
+    };
+
+
+    /* Selected becomes child */
+
+    selected.parentId =
+        parentNode.id;
+
+
+    /* Add new parent */
+
+    nodes.push(parentNode);
+
+
+    selectedId =
+        parentNode.id;
+
+    render();
+
+    selectNode(parentNode.id);
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+function deleteSelected() {
+
+    const node =
+        getNode(selectedId);
+
+    if (!node) {
+        return;
+    }
+
+    if (!node.parentId) {
+
+        alert(
+            "The root node cannot be deleted."
+        );
+
+        return;
+    }
+
+    if (
+        !confirm(
+            "Delete this node and its children?"
+        )
+    ) {
+        return;
+    }
+
+    saveHistory();
+
+    const idsToDelete =
+        collectSubtreeIds(
+            node.id
+        );
+
+    nodes =
+        nodes.filter(
+            n =>
+                !idsToDelete.includes(
+                    n.id
+                )
+        );
+
+    selectedId =
+        node.parentId;
+
+    render();
+
+    selectNode(selectedId);
+}
+
+
+/* =========================================================
+   COLLECT SUBTREE
+========================================================= */
+
+function collectSubtreeIds(id) {
+
+    const ids = [id];
+
+    const children =
+        getChildren(id);
+
+    children.forEach(
+        child => {
+
+            ids.push(
+                ...collectSubtreeIds(
+                    child.id
+                )
+            );
+
+        }
+    );
+
+    return ids;
+}
+
+
+/* =========================================================
+   DUPLICATE
+========================================================= */
+
+function duplicateSelected() {
+
+    const original =
+        getNode(selectedId);
+
+    if (!original) {
+        return;
+    }
+
+    saveHistory();
+
+    const newNode = {
+
+        ...original,
+
+        id: createId(),
+
+        text:
+            original.text +
+            " Copy",
+
+        x:
+            original.x + 40,
+
+        y:
+            original.y + 40
+    };
+
+    nodes.push(newNode);
+
+    selectedId =
+        newNode.id;
+
+    render();
+
+    selectNode(newNode.id);
+}
+
+
+/* =========================================================
+   COLLAPSE
+========================================================= */
+
+function toggleCollapse() {
+
+    const node =
+        getNode(selectedId);
+
+    if (!node) {
+        return;
+    }
+
+    saveHistory();
+
+    node.collapsed =
+        !node.collapsed;
+
+    render();
+}
+
+
+/* =========================================================
+   NODE DRAG
+========================================================= */
+
+function startNodeDrag(
+    event,
+    node
+) {
+
+    event.stopPropagation();
+
+    draggingNode =
+        node;
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    const worldX =
+        (
+            event.clientX -
+            rect.left -
+            panX
+        ) / zoom;
+
+    const worldY =
+        (
+            event.clientY -
+            rect.top -
+            panY
+        ) / zoom;
+
+    dragOffsetX =
+        worldX - node.x;
+
+    dragOffsetY =
+        worldY - node.y;
+
+    document.addEventListener(
+        "mousemove",
+        moveNode
+    );
+
+    document.addEventListener(
+        "mouseup",
+        stopNodeDrag
+    );
+
+    saveHistory();
+}
+
+
+/* =========================================================
+   MOVE NODE
+========================================================= */
+
+function moveNode(event) {
+
+    if (!draggingNode) {
+        return;
+    }
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    const worldX =
+        (
+            event.clientX -
+            rect.left -
+            panX
+        ) / zoom;
+
+    const worldY =
+        (
+            event.clientY -
+            rect.top -
+            panY
+        ) / zoom;
+
+    draggingNode.x =
+        worldX - dragOffsetX;
+
+    draggingNode.y =
+        worldY - dragOffsetY;
+
+    render();
+}
+
+
+/* =========================================================
+   STOP DRAG
+========================================================= */
+
+function stopNodeDrag() {
+
+    draggingNode =
+        null;
+
+    document.removeEventListener(
+        "mousemove",
+        moveNode
+    );
+
+    document.removeEventListener(
+        "mouseup",
+        stopNodeDrag
+    );
+}
+
+
+/* =========================================================
+   CANVAS PAN
+========================================================= */
+
+canvas.addEventListener(
+    "mousedown",
+    event => {
+
+        if (
+            event.target !== canvas &&
+            event.target !== world &&
+            event.target !== nodesContainer
+        ) {
+            return;
+        }
+
+        panning = true;
+
+        canvas.classList.add(
+            "dragging"
+        );
+
+        panStartX =
+            event.clientX;
+
+        panStartY =
+            event.clientY;
+
+        oldPanX =
+            panX;
+
+        oldPanY =
+            panY;
+    }
+);
+
+
+document.addEventListener(
+    "mousemove",
+    event => {
+
+        if (!panning) {
+            return;
+        }
+
+        panX =
+            oldPanX +
+            (
+                event.clientX -
+                panStartX
+            );
+
+        panY =
+            oldPanY +
+            (
+                event.clientY -
+                panStartY
+            );
+
+        updateWorld();
+    }
+);
+
+
+document.addEventListener(
+    "mouseup",
+    () => {
+
+        panning = false;
+
+        canvas.classList.remove(
+            "dragging"
+        );
+    }
+);
+
+
+/* =========================================================
+   UPDATE WORLD
+========================================================= */
+
+function updateWorld() {
+
+    world.style.transform =
+        `translate(${panX}px, ${panY}px)
+         scale(${zoom})`;
+
+    zoomValue.textContent =
+        Math.round(
+            zoom * 100
+        ) + "%";
+}
+
+
+/* =========================================================
+   ZOOM IN
+========================================================= */
+
+function zoomIn() {
+
+    zoom =
+        Math.min(
+            zoom * 1.15,
+            4
+        );
+
+    updateWorld();
+}
+
+
+/* =========================================================
+   ZOOM OUT
+========================================================= */
+
+function zoomOut() {
+
+    zoom =
+        Math.max(
+            zoom / 1.15,
+            0.25
+        );
+
+    updateWorld();
+}
+
+
+/* =========================================================
+   MOUSE WHEEL ZOOM
+========================================================= */
+
+canvas.addEventListener(
+    "wheel",
+    event => {
+
+        if (!event.ctrlKey) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (event.deltaY < 0) {
+            zoomIn();
+        }
+        else {
+            zoomOut();
+        }
+
+    },
+    { passive: false }
+);
+
+
+/* =========================================================
+   FIT MAP
+========================================================= */
+
+function fitMap() {
+
+    if (nodes.length === 0) {
+        return;
+    }
+
+    let minX = Infinity;
+    let minY = Infinity;
+
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+
+    nodes.forEach(node => {
+
+        if (isHidden(node.id)) {
+            return;
+        }
+
+        minX =
+            Math.min(
+                minX,
+                node.x
+            );
+
+        minY =
+            Math.min(
+                minY,
+                node.y
+            );
+
+        maxX =
+            Math.max(
+                maxX,
+                node.x
+            );
+
+        maxY =
+            Math.max(
+                maxY,
+                node.y
+            );
+
+    });
+
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    const mapWidth =
+        maxX - minX + 250;
+
+    const mapHeight =
+        maxY - minY + 200;
+
+
+    zoom =
+        Math.min(
+            rect.width / mapWidth,
+            rect.height / mapHeight,
+            1.5
+        );
+
+    zoom =
+        Math.max(
+            zoom,
+            0.25
+        );
+
+
+    panX =
+        rect.width / 2 -
+        ((minX + maxX) / 2) * zoom;
+
+    panY =
+        rect.height / 2 -
+        ((minY + maxY) / 2) * zoom;
+
+
+    updateWorld();
+}
+
+
+/* =========================================================
+   NEW MAP
+========================================================= */
+
+function newMap() {
+
+    if (
+        !confirm(
+            "Create a new mind map?"
+        )
+    ) {
+        return;
+    }
+
+    saveHistory();
+
+    nodes = [
+
+        {
+            id: "root",
+            text: "My MindMap",
+            parentId: null,
+            x: 500,
+            y: 350,
+            color: "#ffffff",
+            shape: "rounded",
+            fontSize: 18,
+            bold: true,
+            italic: false,
+            collapsed: false
+        }
+
+    ];
+
+    selectedId =
+        "root";
+
+    zoom = 1;
+
+    panX = 0;
+
+    panY = 0;
+
+    render();
+
+    selectNode("root");
+}
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+function saveMap() {
+
+    localStorage.setItem(
+        "mindmap-v9",
+        JSON.stringify(nodes)
+    );
+
+    alert(
+        "MindMap saved."
+    );
+}
+
+
+/* =========================================================
+   LOAD
+========================================================= */
+
+function loadMap() {
+
+    const data =
+        localStorage.getItem(
+            "mindmap-v9"
+        );
+
+    if (!data) {
+        return;
+    }
+
+    try {
+
+        nodes =
+            JSON.parse(data);
+
+        if (
+            !Array.isArray(nodes) ||
+            nodes.length === 0
+        ) {
+            return;
+        }
+
+        selectedId =
+            nodes[0].id;
+
+        render();
+
+        selectNode(
+            selectedId
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+}
+
+
+/* =========================================================
+   EXPORT JSON
+========================================================= */
+
+function exportJSON() {
+
+    const text =
+        JSON.stringify(
+            nodes,
+            null,
+            2
+        );
+
+    document.getElementById(
+        "json-text"
+    ).value = text;
+
+    document.getElementById(
+        "json-modal"
+    ).classList.add(
+        "open"
+    );
+}
+
+
+/* =========================================================
+   IMPORT JSON
+========================================================= */
+
+function importJSON() {
+
+    document.getElementById(
+        "json-text"
+    ).value = "";
+
+    document.getElementById(
+        "json-modal"
+    ).classList.add(
+        "open"
+    );
+}
+
+
+/* =========================================================
+   APPLY JSON
+========================================================= */
+
+function applyJSON() {
+
+    const text =
+        document.getElementById(
+            "json-text"
+        ).value;
+
+    try {
+
+        const data =
+            JSON.parse(text);
+
+        if (
+            !Array.isArray(data)
+        ) {
+            throw new Error(
+                "Invalid format"
+            );
+        }
+
+        saveHistory();
+
+        nodes = data;
+
+        selectedId =
+            nodes[0]?.id;
+
+        closeJSON();
+
+        render();
+
+        if (selectedId) {
+            selectNode(
+                selectedId
+            );
+        }
+
+    }
+    catch (error) {
+
+        alert(
+            "Invalid JSON."
+        );
+
+    }
+}
+
+
+/* =========================================================
+   CLOSE JSON
+========================================================= */
+
+function closeJSON() {
+
+    document.getElementById(
+        "json-modal"
+    ).classList.remove(
+        "open"
+    );
+}
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function saveHistory() {
+
+    undoStack.push(
+        JSON.stringify(nodes)
+    );
+
+    if (
+        undoStack.length > 50
+    ) {
+        undoStack.shift();
+    }
+
+    redoStack = [];
+}
+
+
+/* =========================================================
+   UNDO
+========================================================= */
+
+function undo() {
+
+    if (
+        undoStack.length === 0
+    ) {
+        return;
+    }
+
+    redoStack.push(
+        JSON.stringify(nodes)
+    );
+
+    nodes =
+        JSON.parse(
+            undoStack.pop()
+        );
+
+    selectedId =
+        nodes[0]?.id;
+
+    render();
+
+    if (selectedId) {
+        selectNode(
+            selectedId
+        );
+    }
+}
+
+
+/* =========================================================
+   REDO
+========================================================= */
+
+function redo() {
+
+    if (
+        redoStack.length === 0
+    ) {
+        return;
+    }
+
+    undoStack.push(
+        JSON.stringify(nodes)
+    );
+
+    nodes =
+        JSON.parse(
+            redoStack.pop()
+        );
+
+    selectedId =
+        nodes[0]?.id;
+
+    render();
+
+    if (selectedId) {
+        selectNode(
+            selectedId
+        );
+    }
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+function toggleGrid() {
+
+    document
+        .getElementById(
+            "grid-panel"
+        )
+        .classList.toggle(
+            "open"
+        );
+}
+
+
+/* =========================================================
+   UPDATE GRID
+========================================================= */
+
+function updateGrid() {
+
+    const type =
+        document.getElementById(
+            "grid-type"
+        ).value;
+
+    const size =
+        document.getElementById(
+            "grid-size"
+        ).value;
+
+    const opacity =
+        document.getElementById(
+            "grid-opacity"
+        ).value;
+
+    const background =
+        document.getElementById(
+            "grid-background"
+        ).value;
+
+    const color =
+        document.getElementById(
+            "grid-color"
+        ).value;
+
+
+    canvas.style.backgroundColor =
+        background;
+
+
+    if (type === "line") {
+
+        canvas.style.backgroundImage =
+            `linear-gradient(
+                ${color},
+                ${color}
+            ),
+            linear-gradient(
+                90deg,
+                ${color},
+                ${color}
+            )`;
+
+        canvas.style.backgroundSize =
+            `${size}px ${size}px`;
+
+    }
+
+    else if (type === "dot") {
+
+        canvas.style.backgroundImage =
+            `radial-gradient(
+                ${color} 1px,
+                transparent 1px
+            )`;
+
+        canvas.style.backgroundSize =
+            `${size}px ${size}px`;
+
+    }
+
+    else {
+
+        canvas.style.backgroundImage =
+            "none";
+
+    }
+
+    canvas.style.opacity =
+        "1";
+
+    canvas.style.setProperty(
+        "--grid-opacity",
+        opacity
+    );
+}
+
+
+/* =========================================================
+   KEYBOARD SHORTCUTS
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        /* Don't capture typing */
+
+        if (
+            event.target.tagName ===
+            "INPUT" ||
+            event.target.tagName ===
+            "TEXTAREA" ||
+            event.target.tagName ===
+            "SELECT"
+        ) {
+            return;
+        }
+
+
+        /* Delete */
+
+        if (
+            event.key ===
+            "Delete"
+        ) {
+
+            deleteSelected();
+
+            return;
+        }
+
+
+        /* Child */
+
+        if (
+            event.key ===
+            "Tab"
+        ) {
+
+            event.preventDefault();
+
+            addChild();
+
+            return;
+        }
+
+
+        /* Sibling */
+
+        if (
+            event.key ===
+            "Enter"
+        ) {
+
+            event.preventDefault();
+
+            addSibling();
+
+            return;
+        }
+
+
+        /* Undo */
+
+        if (
+            event.ctrlKey &&
+            event.key.toLowerCase() ===
+            "z"
+        ) {
+
+            event.preventDefault();
+
+            undo();
+
+            return;
+        }
+
+
+        /* Redo */
+
+        if (
+            event.ctrlKey &&
+            event.key.toLowerCase() ===
+            "y"
+        ) {
+
+            event.preventDefault();
+
+            redo();
+
+            return;
+        }
+
+
+        /* Save */
+
+        if (
+            event.ctrlKey &&
+            event.key.toLowerCase() ===
+            "s"
+        ) {
+
+            event.preventDefault();
+
+            saveMap();
+
+            return;
+        }
+
+    }
+);
+
+
+/* =========================================================
+   HELP
+========================================================= */
+
+function showShortcuts() {
+
+    alert(
+`MindMap Version 9
+
+Keyboard Shortcuts
+
+Tab       = Add Child
+Enter     = Add Sibling
+Delete    = Delete Node
+Ctrl + Z  = Undo
+Ctrl + Y  = Redo
+Ctrl + S  = Save
+
+Ctrl + Mouse Wheel = Zoom`
+    );
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+loadMap();
+
+render();
+
+selectNode(
+    selectedId
+);
+
+updateWorld();
+
+</script>
+
+</body>
+</html>
